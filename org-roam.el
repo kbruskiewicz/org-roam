@@ -570,7 +570,7 @@ it as FILE-PATH."
         (let ((type (org-element-property :type link))
               (path (org-element-property :path link))
               (start (org-element-property :begin link)))
-          (when (and (string= type "file")
+          (when (and (string= type "brain")
                      (org-roam--org-file-p path))
             (goto-char start)
             (let* ((element (org-element-at-point))
@@ -950,7 +950,7 @@ GOTO and KEYS argument have the same functionality as
                    (file-truename)
                    (file-name-directory))))
     (org-link-make-string
-     (concat "file:" (file-relative-name target here))
+     (concat "brain:" (file-relative-name target here))
      description)))
 
 (defun org-roam-insert (prefix)
@@ -1258,7 +1258,7 @@ This function hooks into `org-open-at-point' via `org-open-at-point-functions'."
                 (dolist (group grouped-backlinks)
                   (let ((file-from (car group))
                         (bls (cdr group)))
-                    (insert (format "** [[file:%s][%s]]\n"
+                    (insert (format "** [[brain:%s][%s]]\n"
                                     file-from
                                     (org-roam--get-title-or-slug file-from)))
                     (dolist (backlink bls)
@@ -1503,7 +1503,7 @@ Otherwise, behave as if called interactively."
     ;; Disable local hooks for all org-roam buffers
     (dolist (buf (org-roam--get-roam-buffers))
       (with-current-buffer buf
-        (org-link-set-parameters "file" :face 'org-link)
+        (org-link-set-parameters "brain" :face 'org-link)
         (remove-hook 'post-command-hook #'org-roam--maybe-update-buffer t)
         (remove-hook 'after-save-hook #'org-roam--db-update-file t))))))
 
@@ -1513,7 +1513,7 @@ Otherwise, behave as if called interactively."
     (setq org-roam-last-window (get-buffer-window))
     (add-hook 'post-command-hook #'org-roam--maybe-update-buffer nil t)
     (add-hook 'after-save-hook #'org-roam--db-update-file nil t)
-    (org-link-set-parameters "file" :face 'org-roam--roam-link-face)
+    (org-link-set-parameters "brain" :face 'org-roam--roam-link-face)
     (org-roam--maybe-update-buffer :redisplay nil)))
 
 (defun org-roam--delete-file-advice (file &optional _trash)
@@ -1549,18 +1549,18 @@ Otherwise, behave as if called interactively."
                (file-dir (file-name-directory file-from))
                (relative-path (file-relative-name new-path file-dir))
                (old-relative-path (file-relative-name path file-dir))
-               (slug-regex (regexp-quote (format "[[file:%s][%s]]" old-relative-path old-title)))
+               (slug-regex (regexp-quote (format "[[brain:%s][%s]]" old-relative-path old-title)))
                (named-regex (concat
-                             (regexp-quote (format "[[file:%s][" old-relative-path))
+                             (regexp-quote (format "[[brain:%s][" old-relative-path))
                              "\\(.*\\)"
                              (regexp-quote "]]"))))
           (with-temp-file file-from
             (insert-file-contents file-from)
             (while (re-search-forward slug-regex nil t)
-              (replace-match (format "[[file:%s][%s]]" relative-path new-title)))
+              (replace-match (format "[[brain:%s][%s]]" relative-path new-title)))
             (goto-char (point-min))
             (while (re-search-forward named-regex nil t)
-              (replace-match (format "[[file:%s][\\1]]" relative-path))))
+              (replace-match (format "[[brain:%s][\\1]]" relative-path))))
           (org-roam--db-update-file file-from)))
       (org-roam--db-update-file new-path))))
 ;;; -
